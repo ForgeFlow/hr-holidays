@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="public_holiday_import_view_form" model="ir.ui.view">
+        <field name="name">public.holiday.import.form</field>
+        <field name="model">public.holiday.import</field>
+        <field name="arch" type="xml">
+            <form string="Import Public Holidays">
+                <group>
+                    <field name="provider" />
+                    <field name="country_id" />
+                    <field name="year" />
+                    <field name="subdivision_code" />
+                </group>
+                <footer>
+                    <button
+                        name="action_import"
+                        type="object"
+                        string="Import"
+                        class="btn-primary"
+                    />
+                    <button string="Cancel" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="public_holiday_import_tree" model="ir.ui.view">
+        <field name="name">resource.calendar.leaves.tree.public.holiday.import</field>
+        <field name="model">resource.calendar.leaves</field>
+        <field
+            name="inherit_id"
+            ref="hr_holidays.resource_calendar_leaves_tree_inherit"
+        />
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="js_class">public_holiday_import_list</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
