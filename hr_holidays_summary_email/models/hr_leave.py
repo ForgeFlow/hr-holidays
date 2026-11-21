@@ -4,7 +4,7 @@
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models
-from odoo.tools import DEFAULT_SERVER_DATE_FORMAT
+from odoo.tools import DEFAULT_SERVER_DATE_FORMAT, format_duration
 
 
 class HrLeave(models.Model):
@@ -85,7 +85,12 @@ class HrLeave(models.Model):
         summary_types = self.env["hr.employee"].fields_get(["hr_leave_summary_type"])[
             "hr_leave_summary_type"
         ]["selection"]
-        for company in self.env["res.company"].search([]):
+        companies = (
+            self.env["hr.employee"]
+            .search([("hr_leave_summary_type", "!=", "no")])
+            .company_id
+        )
+        for company in companies:
             for stype_tuple in summary_types:
                 stype = stype_tuple[0]
                 employee_domain = self._get_hr_leave_summary_employee_domain(
@@ -110,18 +115,6 @@ class HrLeave(models.Model):
             )
             res += f" {selection[self.request_date_from_period]}"
         elif self.request_unit_hours:
-            if date_from:
-                selection = dict(
-                    self.env["hr.leave"].fields_get(["request_hour_from"])[
-                        "request_hour_from"
-                    ]["selection"]
-                )
-                res += f" {selection[self.request_hour_from]}"
-            else:
-                selection = dict(
-                    self.env["hr.leave"].fields_get(["request_hour_to"])[
-                        "request_hour_to"
-                    ]["selection"]
-                )
-                res += f" {selection[self.request_hour_to]}"
+            hour = self.request_hour_from if date_from else self.request_hour_to
+            res += f" {format_duration(hour)}"
         return res

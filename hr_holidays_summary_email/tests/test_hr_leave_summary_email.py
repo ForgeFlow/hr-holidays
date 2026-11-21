@@ -14,7 +14,7 @@ class TestHrLeaveSummaryEmail(BaseCommon):
         cls.HrLeave = cls.env["hr.leave"]
         leave_type = cls.env.ref("hr_holidays.hr_holiday_status_dv")
         # Add allocation days for the test
-        leave_type.write({"requires_allocation": "no"})
+        leave_type.write({"requires_allocation": False})
         calendar = cls.env.ref("resource.resource_calendar_std")
         cls.employee = cls.env["hr.employee"].create(
             {
@@ -92,3 +92,33 @@ class TestHrLeaveSummaryEmail(BaseCommon):
         )
         self.HrLeave._cron_send_hr_leave_summary_emails()
         self.assertEqual(self.employee.last_hr_leave_summary_sent, date.today())
+
+    def test_hr_leave_summary_date_hours(self):
+        """
+        Leaves in hours show the hour next to the date.
+        """
+        leave_type = self.env["hr.leave.type"].create(
+            {
+                "name": "Hours leave type",
+                "request_unit": "hour",
+                "requires_allocation": False,
+            }
+        )
+        leave = (
+            self.env["hr.leave"]
+            .with_context(leave_skip_state_check=True)
+            .create(
+                {
+                    "name": "Test hours",
+                    "employee_id": self.employee.id,
+                    "holiday_status_id": leave_type.id,
+                    "request_date_from": date.today() + relativedelta(days=10),
+                    "request_date_to": date.today() + relativedelta(days=10),
+                    "request_hour_from": 9.5,
+                    "request_hour_to": 13.0,
+                }
+            )
+        )
+        self.assertTrue(leave.request_unit_hours)
+        self.assertTrue(leave.format_hr_leave_summary_date().endswith(" 09:30"))
+        self.assertTrue(leave.format_hr_leave_summary_date(False).endswith(" 13:00"))

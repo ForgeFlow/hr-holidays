@@ -3,8 +3,8 @@
 from odoo import fields, models
 
 
-class HrEmployeeBase(models.AbstractModel):
-    _inherit = "hr.employee.base"
+class HrEmployee(models.Model):
+    _inherit = "hr.employee"
 
     hr_leave_summary_type = fields.Selection(
         selection=[("no", "No"), ("daily", "Daily"), ("weekly", "Weekly")],
